@@ -181,12 +181,16 @@ class HangmanTests(unittest.TestCase):
 
     def test_clear_screen_uses_os_command_only_for_interactive_terminal(self):
         self.assertTrue(hasattr(self.app, "clear_screen"), "Missing clear_screen() function")
-        for os_name, is_tty, expected in [("nt", True, "cls"),
-                                           ("posix", True, "clear"),
-                                           ("nt", False, None)]:
+        for os_name, is_tty, term, expected in [("nt", True, None, "cls"),
+                                               ("posix", True, "xterm", "clear"),
+                                               ("posix", True, None, None),
+                                               ("posix", True, "", None),
+                                               ("posix", True, "dumb", None),
+                                               ("nt", False, "xterm", None)]:
             with self.subTest(os_name=os_name, is_tty=is_tty):
                 with patch.object(self.app.os, "name", os_name), \
                      patch.object(self.app.sys.stdout, "isatty", return_value=is_tty), \
+                     patch.dict(self.app.os.environ, {} if term is None else {"TERM": term}, clear=True), \
                      patch.object(self.app.os, "system") as command:
                     self.app.clear_screen()
                 if expected is None:

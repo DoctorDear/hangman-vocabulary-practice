@@ -1,2 +1,5 @@
 __pycache__/
 *.py[cod]
+
+rush/words.json
+rush/words.json.tmp

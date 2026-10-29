@@ -1,6 +1,48 @@
+import json
 import os
 import random
 import sys
+
+
+def save_words(words, path):
+    try:
+        with open(path + ".tmp", "w", encoding="utf-8") as file:
+            json.dump(words, file, ensure_ascii=False, indent=2)
+        os.replace(path + ".tmp", path)
+    except OSError:
+        print("Could not save. Your previous file has not been replaced.")
+        return False
+    print("Vocabulary saved.")
+    return True
+
+
+def load_words(words, path):
+    try:
+        with open(path, encoding="utf-8") as file:
+            data = json.load(file)
+        if not isinstance(data, list):
+            raise ValueError
+        loaded = []
+        seen = []
+        for item in data:
+            if not isinstance(item, dict):
+                raise ValueError
+            word = item.get("word")
+            hint = item.get("hint")
+            if not isinstance(word, str) or not isinstance(hint, str):
+                raise ValueError
+            word = word.strip().lower()
+            hint = hint.strip()
+            if not word.isascii() or not word.isalpha() or not hint or word in seen:
+                raise ValueError
+            seen.append(word)
+            loaded.append({"word": word, "hint": hint})
+    except (OSError, ValueError, UnicodeError):
+        print("Could not load a valid file. Current vocabulary is unchanged.")
+        return False
+    words[:] = loaded
+    print("Vocabulary loaded. It replaces the current bank.")
+    return True
 
 
 def word_length(item):
@@ -59,8 +101,12 @@ def delete_word(words):
 
 
 def clear_screen():
-    if sys.stdout.isatty():
-        os.system("cls" if os.name == "nt" else "clear")
+    if not sys.stdout.isatty():
+        return
+    if os.name == "nt":
+        os.system("cls")
+    elif os.environ.get("TERM") not in (None, "", "dumb"):
+        os.system("clear")
 
 
 def draw_hangman(mistakes):
@@ -131,6 +177,7 @@ def play_game(words):
 
 
 def main():
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "words.json")
     words = [
         {"word": "cat", "hint": "A small pet that says meow"},
         {"word": "apple", "hint": "A red or green fruit"},
@@ -146,6 +193,8 @@ def main():
         print("3. View / search words")
         print("4. Delete word")
         print("5. Exit")
+        print("6. Save vocabulary")
+        print("7. Load vocabulary (replaces current bank)")
         choice = input("Choose: ").strip()
 
         if choice == "1":
@@ -161,6 +210,10 @@ def main():
         elif choice == "5":
             print("Goodbye!")
             break
+        elif choice == "6":
+            save_words(words, path)
+        elif choice == "7":
+            load_words(words, path)
         else:
             print("Invalid menu choice.")
 
