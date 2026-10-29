@@ -10,3 +10,5 @@
 .lesson-tabs { flex-wrap: wrap; }
 
 .reading-row{display:grid;grid-template-columns:3rem 1fr;gap:12px;padding:18px 0;border-bottom:1px solid #ddd;scroll-margin-top:20px}.reading-row>div{min-width:0}.reading-row pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#172033;color:#fff;padding:12px;border-radius:8px}.reading-row p{line-height:1.8}.reading-number{color:#666;padding-top:12px}.reading-row small{color:#666}.reading-jumps{line-height:2.5;margin:20px 0}
+
+.reading-grid{margin-top:20px;align-items:start}.reading-code-line{width:100%;text-align:left;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.reading-code-line:hover{background:#293653}.reading-code-line:focus-visible{outline:2px solid #c4b5fd;outline-offset:-2px}.reading-code-line.active{background:#3c355b}.reading-explanation{position:sticky;top:20px}.reading-explanation p{line-height:1.9}.reading-explanation pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf0f6;padding:12px;border-radius:8px}#reading-function{max-width:100%;padding:10px;margin:12px 0}@media(max-width:800px){.reading-explanation{position:static}.reading-grid .code-scroll{max-height:40vh}}

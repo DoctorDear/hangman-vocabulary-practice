@@ -40,7 +40,8 @@ function showPage(){
   document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!==page);
   document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   if(page==='lab')renderTrace();
-  if(location.hash.startsWith('#reading-')) document.getElementById(location.hash.slice(1))?.scrollIntoView(); else window.scrollTo(0,0);
+  if(page==='reading' && location.hash.startsWith('#reading-')) selectReadingLine(Number(location.hash.slice(9)));
+  window.scrollTo(0,0);
 }
 window.addEventListener('hashchange',showPage);
 const requirements=[
@@ -98,4 +99,28 @@ $('#note-text').value=readStorage('hangman-study-note','');
 $('#save-note').addEventListener('click',()=>{$('#note-status').textContent=writeStorage('hangman-study-note',$('#note-text').value)?'บันทึกในเบราว์เซอร์นี้แล้ว':'บันทึกไม่ได้ กรุณาดาวน์โหลดสำรองแทน';});
 $('#note-text').addEventListener('input',()=>{$('#note-status').textContent='มีการแก้ไขที่ยังไม่ได้บันทึก';});
 $('#export-note').addEventListener('click',()=>{const blob=new Blob(['Hangman Study Room\n\n'+$('#note-text').value],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='hangman-study-notes.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-chooseLesson('save');renderTerms();renderQuestion();updateProgress();showPage();
+chooseLesson('save');renderTerms();renderQuestion();updateProgress();
+
+let readingNumber=1;
+const readingSelect=$('#reading-function');
+readingSelect.innerHTML=READING.groups.map((g,i)=>`<option value="${i}">${esc(g.title)} · บรรทัด ${g.start}–${g.end}</option>`).join('');
+function selectReadingLine(number){
+ if(!Number.isInteger(number)||number<1||number>READING.lines.length)return;
+ readingNumber=number;
+ const index=READING.groups.findIndex(g=>number>=g.start&&number<=g.end), group=READING.groups[index], line=READING.lines[number-1];
+ readingSelect.value=String(index);
+ $('#reading-title').textContent=group.title;
+ $('#reading-code').innerHTML=READING.lines.slice(group.start-1,group.end).map(l=>`<button type="button" class="code-line reading-code-line${l.number===number?' active':''}" data-reading-line="${l.number}" aria-pressed="${l.number===number}" aria-label="บรรทัด ${l.number}: ${esc(l.code.trim()||'บรรทัดว่าง')}"><span class="line-no">${l.number}</span><code>${highlight(l.code)||' '}</code></button>`).join('');
+ $('#reading-line-title').textContent=`บรรทัด ${number} · ${group.title}`;
+ $('#reading-selected').textContent=line.code||'(บรรทัดว่าง)';
+ $('#reading-note').textContent=line.note;
+ $('#reading-indent').textContent=line.indent;
+ $('#reading-prev').disabled=number===1;
+ $('#reading-next').disabled=number===READING.lines.length;
+}
+readingSelect.addEventListener('change',()=>selectReadingLine(READING.groups[Number(readingSelect.value)].start));
+$('#reading-code').addEventListener('click',e=>{const b=e.target.closest('[data-reading-line]');if(b){selectReadingLine(Number(b.dataset.readingLine));$('#reading-code').querySelector('.active').focus({preventScroll:true});}});
+$('#reading-prev').addEventListener('click',()=>selectReadingLine(readingNumber-1));
+$('#reading-next').addEventListener('click',()=>selectReadingLine(readingNumber+1));
+selectReadingLine(Number(location.hash.slice(9))||1);
+showPage();
