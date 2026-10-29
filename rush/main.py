@@ -153,6 +153,7 @@ def play_game(words):
         print("Word:", display.strip())
         print("Guessed letters:", " ".join(guesses))
         print("Mistakes:", mistakes, "/ 6")
+        print("Controls: one letter to guess | 0 = menu | Ctrl+C = exit")
         print(message)
 
         if "_" not in display:
@@ -163,6 +164,8 @@ def play_game(words):
             return
 
         guess = input("Guess one letter: ").strip().lower()
+        if guess == "0":
+            return "quit"
         if len(guess) != 1 or not guess.isascii() or not guess.isalpha():
             message = "Enter one English letter."
         elif guess in guesses:
@@ -178,13 +181,9 @@ def play_game(words):
 
 def main():
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "words.json")
-    words = [
-        {"word": "cat", "hint": "A small pet that says meow"},
-        {"word": "apple", "hint": "A red or green fruit"},
-        {"word": "python", "hint": "A popular programming language"},
-        {"word": "banana", "hint": "A long yellow fruit"},
-        {"word": "school", "hint": "A place where students learn"},
-    ]
+    words = []
+    if not load_words(words, path):
+        print("Starting with an empty vocabulary. Add words, then choose 6 to save.")
 
     while True:
         print("\n=== HANGMAN VOCABULARY PRACTICE ===")
@@ -198,8 +197,8 @@ def main():
         choice = input("Choose: ").strip()
 
         if choice == "1":
-            play_game(words)
-            input("Press Enter to return to menu: ")
+            if play_game(words) != "quit":
+                input("Press Enter to return to menu: ")
             clear_screen()
         elif choice == "2":
             add_word(words)
